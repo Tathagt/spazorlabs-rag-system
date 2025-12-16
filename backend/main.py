@@ -2,7 +2,6 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import chromadb
-from chromadb.config import Settings
 import openai
 import os
 from typing import List, Optional
@@ -22,11 +21,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize Chroma client
-chroma_client = chromadb.Client(Settings(
-    chroma_db_impl="duckdb+parquet",
-    persist_directory="./chroma_db"
-))
+# Initialize Chroma client (NEW API)
+chroma_client = chromadb.PersistentClient(path="./chroma_db")
 
 # Get or create collection
 collection = chroma_client.get_or_create_collection(
