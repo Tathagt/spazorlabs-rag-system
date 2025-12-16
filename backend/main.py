@@ -9,6 +9,10 @@ import PyPDF2
 import io
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 import hashlib
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = FastAPI(title="RAG System API")
 
@@ -30,8 +34,12 @@ collection = chroma_client.get_or_create_collection(
     metadata={"hnsw:space": "cosine"}
 )
 
-# OpenAI API key
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# OpenAI API key - with validation
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise ValueError("OPENAI_API_KEY environment variable is not set. Please create a .env file with your API key.")
+
+openai.api_key = api_key
 
 class QueryRequest(BaseModel):
     question: str
@@ -72,6 +80,8 @@ def get_embedding(text: str) -> List[float]:
 async def root():
     return {
         "message": "RAG System API",
+        "status": "running",
+        "openai_configured": bool(api_key),
         "endpoints": {
             "upload": "/upload",
             "query": "/query",
